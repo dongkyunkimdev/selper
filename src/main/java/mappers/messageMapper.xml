@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace = "message">
+	<resultMap id="messageResult" type="msg">
+		<id property="message_no" column="message_no" />
+		<result property="message_user1" column="user_no" />
+		<result property="message_user2" column="user_no2" />
+		<result property="message_title" column="message_title" />
+		<result property="message_content" column="message_content" />
+		<result property="message_sdate" column="message_sdate" />
+		<result property="message_rdate" column="message_rdate" />
+		<result property="message_ck" column="message_ck" />
+	</resultMap>
+	
+	<insert id="sendMessage" parameterType = "msg">
+		<![CDATA[
+		INSERT INTO 
+			message_info(message_no, user_no, user_no2, message_title, message_content, message_sdate, message_rdate, message_ck)
+		VALUES
+			(MESSAGE_NO_SQ.nextval, #{message_user1}, #{message_user2}, #{message_title}, #{message_content}, sysdate, sysdate, '읽지않음')
+		]]>
+	</insert>
+	
+	<!-- 받은 쪽지 삭제 -->
+	<delete id="deleteMessage" parameterType="msg">
+	
+		DELETE from 
+			message_info
+		WHERE 
+			message_no = #{message_no}
+	
+	</delete>
+	
+	<!-- 내가 보낸 쪽지 -->
+	<select id = "sendList" resultMap = "messageResult">
+		<![CDATA[
+		select 
+			message_no, user_no, user_no2, message_title, message_content, message_sdate, message_rdate, message_ck 
+		from 
+			message_info 
+		where 
+			user_no = 1
+		]]>
+	</select>
+	
+	<!-- 받은 쪽지 목록 -->
+	<select id = "receiveList" resultMap = "messageResult">
+		<![CDATA[
+		select 
+			message_no, user_no, user_no2, message_title, message_content, message_sdate, message_rdate, message_ck 
+		from 
+			message_info 
+		where 
+			user_no2 = 1
+		]]>
+	</select>
+	
+	<!-- 보낸 쪽지 내용 확인 -->
+	<select id = "sendView" parameterType="int" resultMap = "messageResult">
+		<![CDATA[
+		select 
+			message_no, user_no2, message_title, message_content, message_ck 
+		from 
+			message_info 
+		where 
+			message_no = #{message_no} and user_no = 1
+		]]>
+	</select>
+	
+	<!-- 받은 쪽지 내용 확인 -->
+	<select id = "receiveView" parameterType="int" resultMap = "messageResult">
+		<![CDATA[
+		select 
+			message_no, user_no, user_no2, message_title, message_content, message_sdate 
+		from 
+			message_info 
+		where 
+			message_no = #{message_no} and user_no2 = 1
+		]]>
+	</select>
+	
+	<!-- 쪽지 수신여부 -->
+	<update id="count" parameterType = "int">
+		<![CDATA[
+		update 
+			message_info 
+		set 
+			message_ck = '읽음'
+		where 
+			message_no = #{message_no} 
+		]]>
+	</update>
+	
+	<!-- 페이징 -->
+	<select id="sendListPage" resultMap = "messageResult" parameterType="com.javassem.domain.Criteria">
+		<![CDATA[
+		select message_no, user_no, user_no2, message_title, 
+			message_content, to_char(message_sdate,'yyyy/mm/dd'), to_char(message_rdate,'yyyy/mm/dd'), message_ck  
+		from 
+			(select message_no, user_no, user_no2, message_title, 
+			message_content, message_sdate, message_rdate, message_ck, 
+			row_number() over(order by message_no desc) as rNum from message_info where user_no = 1 )mb 
+		where 
+			rNum between #{rowStart} and #{rowEnd} 
+		order by 
+			message_no desc
+		]]>
+	</select>
+	
+	<!-- 페이징 -->
+	<select id="receiveListPage" resultMap = "messageResult" parameterType="com.javassem.domain.Criteria">
+		<![CDATA[
+		select message_no, user_no, user_no2, message_title, 
+			message_content, to_char(message_sdate,'yyyy/mm/dd'), to_char(message_rdate,'yyyy/mm/dd'), message_ck 
+		from (select message_no, user_no, user_no2, message_title, 
+			message_content, message_sdate, message_rdate, message_ck, 
+			row_number() over(order by message_no desc) as rNum 
+			from 
+				message_info 
+			where 
+				user_no2 = 1 )mb 
+		where 
+			rNum between #{rowStart} and #{rowEnd} 
+		order by 
+		message_no desc
+		]]>
+	</select>
+	
+	
+	
+	<!-- 게시물 개수 구하기 -->
+	<select id = "getMessageListCount" resultType = "int">
+		<![CDATA[
+			select count(message_no) from message_info where message_no > 0
+		]]>
+	</select>
+	
+	
+	
+</mapper>
+
+
+	
+	
+	
+	
+	

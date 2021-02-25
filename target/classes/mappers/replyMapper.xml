@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javassem.mappers.reply">
+<!-- 댓글 조회 -->
+<select id="replyList" parameterType="int" resultType="com.javassem.domain.ReplyVO">
+    select
+        COMMENT_NO, USER_NO, BOARD_NO, COMMENT_CONTENT, COMMENT_DATE
+    from COMMENT_INFO
+        where BOARD_NO = #{BOARD_NO}        
+</select>
+
+<!-- 댓글 작성 -->
+<insert id="replyWrite" parameterType="com.javassem.domain.ReplyVO">
+    insert into COMMENT_INFO(COMMENT_NO, BOARD_NO, USER_NO, COMMENT_CONTENT)<!-- , comment_date -->
+        values(EX_SEQ.nextval, #{BOARD_NO}, #{USER_NO}, #{COMMENT_CONTENT})<!-- , #{comment_date} -->
+</insert>
+
+    <!-- 댓글 삭제 -->
+	<delete id="delete" parameterType="int">
+	<![CDATA[
+		delete
+		from COMMENT_info
+		where 
+		COMMENT_NO = #{COMMENT_NO}
+		]]>
+	</delete>
+
+</mapper>

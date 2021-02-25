@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="user">
+
+	<!-- memberVO 변수명을 마이바지스 설정파일에서 에서 typeAlias 에서 지정한 하였음 -->
+	<select id="idCheck" parameterType="member" resultType="member">
+		select * from user_info where userid=#{userId}
+		<if test="userPass !=null">
+			AND userpass=#{userPass}
+		</if>
+	</select>
+
+	<select id="updateview" parameterType="member" resultType="member">
+		select userId, userPass, userName, user_tel as userTel, user_nick as userNick, user_no as
+		userNo from user_info where userId=#{userId}
+	</select>
+
+	<!-- 회원가입 sql -->
+	<insert id="userInsert" parameterType="member"> <!-- insert,delete,update는 리턴타입 필요없음 -->
+		INSERT INTO user_info(user_no, username, userid, userpass, user_tel,
+		user_nick, user_cat) VALUES(ex_seq.nextval, #{userName}, #{userId},
+		#{userPass}, #{userTel}, #{userNick}, '일반사용자')
+	</insert>
+	<!-- 회원정보 수정 -->
+	<update id="userUpdate" parameterType="member"> <!-- insert,delete,update는 리턴타입 필요없음 -->
+		update user_info set userName = #{userName} , user_tel = #{userTel},
+		user_nick = #{userNick}, userpass=#{userPass} where user_no = #{userNo}
+	</update>
+	<!-- userId 같은 이름들은 parameterClass의 클래스 필드 명 -->
+</mapper>

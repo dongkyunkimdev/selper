@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javassem.mappers.board">
+
+
+	<!-- 게시물 목록 불러오기 -->
+	<select id="list" resultType="com.javassem.domain.BoardVO">
+	<![CDATA[
+		select
+		board_no, board_title, board_date, user_no, board_views
+		from board_info
+	]]>
+	</select>
+	<insert id="write" parameterType="com.javassem.domain.BoardVO">
+	<!-- 게시글번호 -->
+	<!-- 지역번호 -->
+	<!-- 직업분류번호 -->
+	<![CDATA[
+		insert into board_info(BOARD_NO, LOC_CAT_NO, JOBTYPE_SCAT_NO, USER_NO,
+		BOARD_CAT_NO, BOARD_TITLE, BOARD_CONTENT, BOARD_PICTURE) values(
+		EX_SEQ.nextval,
+		11,
+		1,
+		#{USER_NO},
+		#{BOARD_CAT_NO},
+		#{BOARD_TITLE},
+		#{BOARD_CONTENT},
+		#{BOARD_PICTURE}
+		)
+		]]>
+	</insert>
+
+
+	<!-- 게시물 조회 -->
+	<select id="view" parameterType="int" resultType="com.javassem.domain.BoardVO">
+	<![CDATA[
+		select
+		*
+		from
+		board_info
+		where
+		BOARD_NO = #{BOARD_NO}
+		]]>
+	</select>
+
+	<!-- 게시물 수정 -->
+	<update id="modify" parameterType="com.javassem.domain.BoardVO">
+	<![CDATA[
+		update board_info
+		set
+		BOARD_TITLE = #{BOARD_TITLE},
+		BOARD_CONTENT = #{BOARD_CONTENT},
+		BOARD_PICTURE = #{BOARD_PICTURE}
+		where BOARD_NO = #{BOARD_NO}
+		]]>
+	</update>
+	<!-- 게시물 삭제 -->
+	<delete id="delete" parameterType="int">
+	<![CDATA[
+		delete
+		from board_info
+		where
+		BOARD_NO = #{BOARD_NO}
+		]]>
+	</delete>
+
+	<!-- 게시물 총 갯수 -->
+	<select id="count" resultType="int">
+	<![CDATA[
+		select count(BOARD_NO) from
+		board_info
+		]]>
+	</select>
+
+	<!-- 게시물 목록 + 페이징 -->
+	<select id="listPage" parameterType="com.javassem.domain.Criteria" resultType="com.javassem.domain.BoardVO">
+	<![CDATA[
+		select * from (
+    select board_no, board_title, board_date, user_no, board_views, row_number() over(order by board_no desc) as rNum
+    from board_info
+    ) bi
+    where rNum between #{rowStart} and #{rowEnd}
+    order by board_no desc
+]]>
+	</select>
+	
+	<!--  게시물페이지의 총 갯수 -->
+	<select id="listCount" resultType="int">
+	<![CDATA[
+	select count(board_no) from board_info where board_no>0
+	]]></select>
+	
+	
+	
+	
+	<!-- 검색 -->  
+<select id="listSearch"  parameterType="com.javassem.domain.SearchCriteria" resultType="com.javassem.domain.BoardVO">
+select board_no, board_title, board_date, user_no, board_views from ( select board_no, board_title, board_date, user_no, board_views, row_number() over(order by board_no desc) as rNum from board_info 
+ <include refid="search"></include>
+ ) mb
+ where rNum between #{rowStart} and #{rowEnd}
+ order by board_no desc
+</select>
+
+<sql id="search">
+ <if test="searchType != null">
+  <if test="searchType == 't'.toString()">   where board_title like '%' || '${keyword}' || '%' </if>
+  <if test="searchType == 'c'.toString()">   where board_content like '%' || '${keyword}' || '%' </if>
+  <if test="searchType == 'w'.toString()">  where user_no like '%' || '${keyword}' || '%' </if>
+  <if test="searchType == 'tc'.toString()">   where (board_title like '%' || '${keyword}' || '%') or (board_content like '%' || '${keyword}' || '%') </if>
+ </if>
+</sql>
+
+<select id="countSearch" resultType="int">
+
+ select count(board_no)
+  from board_info
+
+   <include refid="search"></include>
+ <!--   <![CDATA[
+    board_no > 0
+]]> -->
+</select>
+ 
+</mapper>
